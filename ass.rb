@@ -1,94 +1,81 @@
 module Olayemi
-	class NotesApplication
-		attr_reader :name, :notes
-		
-		
+  # create the notes task app here
+  class NotesApplication
+    attr_reader :name, :notes
 
-		def initialize author
-			errorHandler author
-			@name = author
-			@notes = []
-		end
+    def initialize(author)
+      error_handler author
+      @name = author
+      @notes = []
+    end
 
-		public
+    def create(note_content)
+      check_note_input note_content
+      @notes << note_content
+    end
 
-		def create note_content
-			checkNoteInput note_content
-			@notes << note_content
-		end
+    def get(note_id)
+      check_note_id note_id
+      @notes[note_id]
+    end
 
-		def get note_id
-			checkNoteId note_id
-			@notes[note_id]
-		end
+    def list
+      return [] if @notes.empty?
+      @notes.each do |x|
+        return "Note ID: #{@notes.index(x)}\n #{x}\n\nBy Author #{@name}\n"
+      end
+    end
 
-		def list
-			return [] if @notes.empty?
-			@notes.each do |x|
-				return "Note ID: #{@notes.index(x)}\n #{x}\n\nBy Author #{@name}\n"
-			end
-		end
+    def edit(note_id, new_content)
+      check_note_id note_id
+      check_note_input new_content
+      check_if_note_exists note_id
+      @notes[note_id] = new_content
+    end
 
-		def edit note_id, new_content
+    def delete(note_id)
+      check_note_id note_id
+      @notes.delete_at note_id
+    end
 
-			checkNoteId note_id
-			checkNoteInput new_content
-			checkifNoteExists note_id
+    def search(search_text)
+      check_note_input search_text
+      result = {}
+      @notes.each_with_index do |text, index|
+        result[index] = text unless (text =~ /(#{search_text})/).nil?
+      end
 
-		    @notes[note_id] = new_content
-		end
+      if !result.empty?
+        result.each { |index, text| return "Note ID: #{index}\n \
+		#{text}\n\nBy Author #{@name}\n" }
+      else
+        return "No notes found for the search: #{search_text}"
+      end
+    end
 
-		def delete note_id
-			checkNoteId note_id
+    private
 
-			@notes.delete_at note_id
-		end
+    def check_if_note_exists(note_id)
+      raise 'Note does not exist' if @notes[note_id].nil?
+      nil
+    end
 
-		def search search_text
-			checkNoteInput search_text
-			result = {}
-			@notes.each_with_index do |text, index|
-				if !(text =~ /(#{search_text})/).nil?
-					result[index] = text
-				end
-			end
+    def check_note_input(note)
+      raise 'Input should be a string' unless note.is_a? String
+      nil
+    end
 
-			if !result.empty?
-				result.each {|index, text| return "Note ID: #{index}\n #{text}\n\nBy Author #{@name}\n"}
-			else
-				return "No notes found for the seacrh: #{search_text}"
-			end
+    def check_note_id(note_id)
+      raise 'Note Id must be an Integer' unless note_id.is_a? Integer
+      nil
+    end
 
-		end
-
-
-
-
-		private
-		def checkifNoteExists note_id
-			raise 'Note does not exist' if @notes[note_id].nil?
-			return
-		end
-
-		def checkNoteInput note
-			raise "Input should be a string" if !note.is_a? String
-			return
-		end
-
-		
-		def checkNoteId note_id
-			raise 'Note Id must be an Integer' if !note_id.is_a? Integer
-			return
-		end
-
-
-		def errorHandler author
-			raise "Input should be a string" if !author.is_a? String
-			raise "No Chars Allowed" if author.match(/[~!@#$%^&*(){}|:<>]+/)
-			raise "Author name cannot be empty" if author.empty?
-			raise RuntimeError if author.nil?
-			return
-		end
-
-	end
+    def error_handler(author)
+      raise 'Input should be a string' unless author.is_a? String
+      raise 'No Chars Allowed' if author =~ /[~!@#$%^&*(){}|:<>]+/
+      raise 'Author name cannot be empty' if author.empty?
+      raise RuntimeError if author.nil?
+      nil
+    end
+  end
 end
